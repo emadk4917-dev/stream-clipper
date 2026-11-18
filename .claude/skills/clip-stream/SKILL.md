@@ -26,6 +26,13 @@ bash setup.sh            # installs yt-dlp, faster-whisper, opencv; checks ffmpe
   there is a campaign/permission before rendering anything for upload. Unlicensed reposts get
   copyright strikes and get channels rejected from monetisation.
 
+## 1b. Streamer is live right now? Clip it NOW (speed wins campaigns)
+```bash
+python3 -m clipper latest <twitch_name> --hours 1 --top 15
+```
+Analyses the last N hours of their newest VOD, including the stream that is still going.
+Re-run every 30–60 min during big streams; each run gets its own folder.
+
 ## 2. Analyse
 ```bash
 python3 -m clipper analyze "<URL>" --top 30

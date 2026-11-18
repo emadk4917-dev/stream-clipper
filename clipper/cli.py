@@ -53,9 +53,10 @@ def analyze(src: str, out: Path | None, t_from=None, t_to=None, chat=None, top: 
     log("reading stream info…")
     info = D.fetch_info(src)
     channel = info.get("uploader") or info.get("channel") or "stream"
-    run_dir = out or RUNS / f"{slug(channel, 20)}_{slug(str(info.get('id')), 20)}"
-    run_dir.mkdir(parents=True, exist_ok=True)
     a, b = parse_time(t_from), parse_time(t_to)
+    rng = f"_{int(a or 0)}-{int(b) if b else 'end'}" if (a or b) else ""
+    run_dir = out or RUNS / f"{slug(channel, 20)}_{slug(str(info.get('id')), 20)}{rng}"
+    run_dir.mkdir(parents=True, exist_ok=True)
     info.update({"source": src, "audio_offset": a or 0.0, "range": [a, b]})
     (run_dir / "info.json").write_text(json.dumps(info, indent=2))
     log(f"'{info.get('title')}' by {channel}, {int(info.get('duration') or 0) // 60} min")
@@ -76,6 +77,27 @@ def analyze(src: str, out: Path | None, t_from=None, t_to=None, chat=None, top: 
     (run_dir / "candidates.md").write_text(C.candidates_markdown(info, cands))
     log(f"done in {time.time() - t0:.0f}s → {run_dir / 'candidates.md'}")
     return run_dir
+
+
+def latest_vod(channel: str) -> tuple[str, float, str]:
+    """Newest VOD of a Twitch channel. While they're live this is the stream in progress."""
+    url = f"https://www.twitch.tv/{channel}/videos?filter=archives&sort=time"
+    out = D.run(["yt-dlp", "--flat-playlist", "--playlist-end", "1", "--print", "%(url)s\t%(duration)s\t%(title)s", url],
+                capture_output=True, text=True).stdout.strip().splitlines()
+    if not out:
+        raise SystemExit(f"no VODs found for {channel} (VODs disabled, or wrong name?)")
+    vurl, dur, title = (out[0].split("\t") + ["", ""])[:3]
+    return vurl, float(dur or 0), title
+
+
+def latest(channel: str, hours: float, top: int, model: str) -> Path:
+    """Analyse only the last N hours of the streamer's newest (possibly still live) VOD."""
+    vurl, dur, title = latest_vod(channel)
+    info = D.fetch_info(vurl)  # fresh duration (the live VOD keeps growing)
+    dur = float(info.get("duration") or dur)
+    start = max(0.0, dur - hours * 3600)
+    log(f"{channel}: '{title}' is {dur / 3600:.1f} h long, analysing {C.fmt_ts(start)} → {C.fmt_ts(dur)}")
+    return analyze(vurl, None, start, max(start + 60, dur - 30), None, top, model)
 
 
 # ------------------------------------------------------------------ picks
@@ -173,6 +195,11 @@ def main(argv=None):
     r.add_argument("--auto", type=int, help="skip review: render the top N machine picks")
     r.add_argument("--no-captions", action="store_true")
     r.add_argument("--model", default="small")
+    l = sub.add_parser("latest", help="analyse the last N hours of a streamer's newest/live stream")
+    l.add_argument("channel", help="twitch username, e.g. xqc")
+    l.add_argument("--hours", type=float, default=2)
+    l.add_argument("--top", type=int, default=15)
+    l.add_argument("--model", default="small")
     u = sub.add_parser("auto", help="analyze + render top N with no review")
     u.add_argument("src")
     u.add_argument("--clips", type=int, default=8)
@@ -183,6 +210,8 @@ def main(argv=None):
     args = p.parse_args(argv)
     if args.cmd == "analyze":
         analyze(args.src, args.out, args.t_from, args.t_to, args.chat, args.top, args.model)
+    elif args.cmd == "latest":
+        latest(args.channel, args.hours, args.top, args.model)
     elif args.cmd == "render":
         render(args.run_dir, args.picks, args.auto, not args.no_captions, args.model)
     else:
