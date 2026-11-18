@@ -41,7 +41,7 @@ chat id the bot replies with. Everything starts automatically. No files to edit.
 
 (To change a key later: `bash /opt/stream-clipper/deploy/configure.sh`)
 
-## Step 6: Add your campaigns (in Telegram)
+## Step 5: Add your campaigns (in Telegram)
 ```
 /addcampaign Name | twitch_login | rate per 1k | campaign link | account set | rules
 /addcampaign Kai GTA | kaicenat | 1.5 | https://contentrewards.com/... | Set 1 | must tag @kaicenat
