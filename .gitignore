@@ -6,3 +6,4 @@ token*.json
 .env
 /data/
 .venv/
+clipper-keys.txt
