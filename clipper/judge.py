@@ -108,7 +108,7 @@ def screen(cands: list[dict], streamer: str) -> dict[str, float]:
     return {s["id"]: s["score"] for s in (out or {}).get("scores", [])}
 
 
-def judge(cands: list[dict], streamer: str, campaign_rules: str = "", game: str = "") -> list[dict]:
+def judge(cands: list[dict], streamer: str, campaign_rules: str = "", game: str = "", chat: str = "") -> list[dict]:
     """Full judgement on candidates that passed screening. Returns picks (score >= 5 recommended)."""
     if not cands:
         return []
@@ -117,7 +117,8 @@ def judge(cands: list[dict], streamer: str, campaign_rules: str = "", game: str 
     if not keep:
         return []
     user = (f"Streamer: {streamer}\nWhat they're playing: {game or 'unknown'}\n"
-            f"Campaign rules: {campaign_rules or 'none given'}\n\n"
+            f"Campaign rules: {campaign_rules or 'none given'}\n"
+            + (f"Live chat at the moment (the spike that triggered this): {chat}\n" if chat else "") + "\n"
             f"Judge every moment below and return one pick per moment (score it low if it's weak).\n\n"
             + _cands_text(keep))
     out = _ask(JUDGE_MODEL, RULES, user, PICK_SCHEMA, env("JUDGE_EFFORT", "medium"))

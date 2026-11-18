@@ -23,7 +23,7 @@ from . import judge as J
 from . import approvals as Q
 from .config import DATA, db, env, env_float, env_int, now
 
-POLL_MIN = env_int("POLL_MIN", 10)          # how often to check each live streamer
+POLL_MIN = env_int("POLL_MIN", 30)          # catch-up pass (the real-time clipper is the fast path)
 FIRST_WINDOW_MIN = env_int("FIRST_WINDOW_MIN", 30)  # how far back to look the first time we see a stream
 MIN_SCORE = env_float("MIN_SCORE", 5)       # Claude score needed to send a clip for approval
 WORKERS = env_int("WORKERS", 3)             # streamers processed in parallel
@@ -76,9 +76,12 @@ def process(campaign: dict) -> int:
             if p.get("tiktok_end", 0) - p.get("tiktok_start", 0) >= 61:
                 tclip = {**p, "start": p["tiktok_start"], "end": p["tiktok_end"]}
                 tt, _, _ = cli.render_one(run_dir, info, tclip, name + "_tiktok", WHISPER, max_len=90)
+            # store the moment as wall-clock time so it de-duplicates against the real-time clipper
+            p["peak"] = float(info.get("timestamp") or 0) + p["peak"] if info.get("timestamp") else None
             cid = Q.add_clip(campaign, vod, p, mp4, tt, desc)
-            Q.request_approval(cid)
-            sent += 1
+            if cid:
+                Q.request_approval(cid)
+                sent += 1
         except Exception:
             log(f"{login}: render failed\n{traceback.format_exc()}")
     with db() as con:

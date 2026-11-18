@@ -9,11 +9,11 @@ python3 -m venv .venv
 .venv/bin/pip install -U pip
 .venv/bin/pip install -r requirements.txt
 [ -f .env ] || cp .env.example .env
-for svc in live bot trends; do
+for svc in realtime live bot trends; do
   sed "s#__APP_DIR__#${APP_DIR}#g" "deploy/clipper-${svc}.service" > "/etc/systemd/system/clipper-${svc}.service"
 done
 systemctl daemon-reload
 echo
 echo "✅ Installed. Next: nano ${APP_DIR}/.env  (fill in the keys), then:"
-echo "   systemctl enable --now clipper-bot clipper-live clipper-trends"
+echo "   systemctl enable --now clipper-bot clipper-realtime clipper-live clipper-trends"
 echo "   journalctl -u clipper-live -f      # watch the live clipper"

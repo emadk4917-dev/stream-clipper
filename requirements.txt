@@ -4,3 +4,4 @@ opencv-python-headless>=4.8,<5
 numpy>=1.26
 requests>=2.31
 anthropic>=1.0
+streamlink>=6.0

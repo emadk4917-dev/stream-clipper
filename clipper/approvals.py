@@ -35,9 +35,14 @@ def fmt_time(ts: float) -> str:
     return dt.datetime.fromtimestamp(ts, TZ).strftime("%a %H:%M")
 
 
-def add_clip(campaign: dict, vod: str, pick: dict, path: Path, tiktok_path: Path | None, description: str) -> str:
+def add_clip(campaign: dict, vod: str, pick: dict, path: Path, tiktok_path: Path | None,
+             description: str) -> str | None:
+    """Queue a clip. pick["peak"] is wall-clock time of the moment; returns None for a duplicate."""
     cid = uuid.uuid4().hex[:8]
     with db() as con:
+        if pick.get("peak") and con.execute(
+                "SELECT 1 FROM clips WHERE streamer=? AND ABS(peak-?)<60", (campaign["streamer"], pick["peak"])).fetchone():
+            return None  # the real-time and catch-up clippers both caught this moment
         con.execute("""INSERT INTO clips(id, campaign_id, streamer, vod, peak, start, "end", title, hook, description,
                        tags, score, reason, path, tiktok_path, status, account_set, created_at)
                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending', ?, ?)""",

@@ -47,7 +47,7 @@ systemctl enable --now clipper-bot
 In your Telegram group, send `/start`. The bot replies **"Your chat id is -100…"**. Put that number in
 `.env` as `TELEGRAM_CHAT_IDS=-100…`, then:
 ```bash
-systemctl restart clipper-bot && systemctl enable --now clipper-live clipper-trends
+systemctl restart clipper-bot && systemctl enable --now clipper-realtime clipper-live clipper-trends
 ```
 
 ## Step 6: Add your campaigns (in Telegram)
@@ -55,16 +55,16 @@ systemctl restart clipper-bot && systemctl enable --now clipper-live clipper-tre
 /addcampaign Name | twitch_login | rate per 1k | campaign link | account set | rules
 /addcampaign Kai GTA | kaicenat | 1.5 | https://contentrewards.com/... | Set 1 | must tag @kaicenat
 ```
-The live clipper starts watching that streamer within 10 minutes. Other commands: `/campaigns`, `/pause 2`,
+The real-time clipper starts watching that streamer's chat within 5 minutes. Other commands: `/campaigns`, `/pause 2`,
 `/resume 2`, `/queue`, `/stats`, `/link CLIPID URL`, `/report`.
 
 ## Updating to a new version later
 ```bash
-cd /opt/stream-clipper && git pull && .venv/bin/pip install -r requirements.txt && systemctl restart clipper-bot clipper-live clipper-trends
+cd /opt/stream-clipper && git pull && .venv/bin/pip install -r requirements.txt && systemctl restart clipper-bot clipper-realtime clipper-live clipper-trends
 ```
 
 ## If something looks wrong
 ```bash
-journalctl -u clipper-live -n 100
+journalctl -u clipper-realtime -n 100
 ```
 Paste the output to Claude **after checking there are no keys in it**.

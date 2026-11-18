@@ -142,7 +142,9 @@ def render_one(run_dir: Path, info: dict, clip: dict, name: str, model: str = "s
     audio = run_dir / "audio.m4a"
     out_dir = run_dir / "clips"
     out_dir.mkdir(exist_ok=True)
-    cam_file = run_dir.parent / f"facecam_{slug(info.get('uploader_id') or info.get('uploader') or 'x', 30)}.json"
+    from .config import DATA
+    DATA.mkdir(exist_ok=True)
+    cam_file = DATA / f"facecam_{(info.get('uploader_id') or info.get('uploader') or 'x').lower()}.json"
     known_cam = json.loads(cam_file.read_text()) if cam_file.exists() else None
     start, end = parse_time(clip["start"]), parse_time(clip["end"])
     if end - start > max_len:

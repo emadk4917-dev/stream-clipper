@@ -9,11 +9,14 @@ Turns streamer VODs into finished vertical Shorts (1080×1920, facecam/gameplay 
 ## 24/7 system (server)
 | Service | What it does |
 |---|---|
-| `clipper.live` | Watches every active campaign streamer, clips moments while they're live, Claude scores them, sends 5+/10 clips to Telegram |
+| `clipper.realtime` | **Fast path (~2-3 min):** reads campaign streamers' Twitch chat, records a 10-min rolling buffer, cuts on chat spikes (KEKW / CLIP IT / ?????) → Whisper → Claude judge → facecam + captions → Telegram |
+| `clipper.live` | **Catch-up (every 30 min):** loudness + transcript on the VOD, catches moments chat missed; de-duplicated against the fast path |
 | `clipper.bot` | Telegram: ✅/❌ approvals, posting slots per account set, sends posting packs when due, `/addcampaign`, daily scout report |
 | `clipper.trends` | Hourly GTA 6 trend radar (YouTube + Reddit fast movers) → filming briefs for the own-content page |
 
 Setup: **[SERVER_SETUP.md](SERVER_SETUP.md)** · settings: `.env.example`
+
+Tests: `python3 -m unittest discover -s tests` · tune the chat detector on saved chat: `python3 -m clipper.rt.replay data/chatlogs/<file>.jsonl`
 
 ## Manual use
 ```bash
