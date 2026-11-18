@@ -136,40 +136,47 @@ def description(info: dict, clip: dict) -> str:
 
 
 # ------------------------------------------------------------------ render
+def render_one(run_dir: Path, info: dict, clip: dict, name: str, model: str = "small", captions: bool = True,
+               max_len: float = 59) -> tuple[Path, dict, str]:
+    """Render one clip dict ({start, end, title, hook, layout, cam, ...}) to runs/<run>/clips/<name>.mp4."""
+    audio = run_dir / "audio.m4a"
+    out_dir = run_dir / "clips"
+    out_dir.mkdir(exist_ok=True)
+    cam_file = run_dir.parent / f"facecam_{slug(info.get('uploader_id') or info.get('uploader') or 'x', 30)}.json"
+    known_cam = json.loads(cam_file.read_text()) if cam_file.exists() else None
+    start, end = parse_time(clip["start"]), parse_time(clip["end"])
+    if end - start > max_len:
+        log(f"  {end - start:.0f}s is too long, trimming to {max_len:.0f}s")
+        end = start + max_len
+    log(f"rendering {name}: {C.fmt_ts(start)}–{C.fmt_ts(end)} {clip['title']}")
+    sec_start = max(0.0, start - 8)
+    section = D.download_video_section(info["source"], sec_start, end + 8, out_dir / "src" / f"{name}.mp4")
+    real = find_offset(section, audio, sec_start, info.get("audio_offset", 0.0))
+    local_s, local_e = start - real, end - real
+    words = words_for(run_dir, audio, start, end, info.get("audio_offset", 0.0), model) if captions else []
+    mp4 = out_dir / f"{name}.mp4"
+    lay = render_clip(section, local_s, local_e, words, start, clip.get("hook", ""), mp4,
+                      clip.get("layout"), clip.get("cam"), captions, known_cam)
+    if lay["layout"] == "split" and not known_cam:
+        cam_file.write_text(json.dumps(lay["cam"]))  # remember this streamer's facecam for next time
+    desc = description(info, clip)
+    (out_dir / f"{name}.txt").write_text(f"TITLE:\n{clip['title'][:100]}\n\nDESCRIPTION:\n{desc}\n")
+    section.unlink(missing_ok=True)
+    log(f"  ✓ {mp4.name} ({lay['layout']} layout)")
+    return mp4, lay, desc
+
+
 def render(run_dir: Path, picks_path: Path | None = None, auto_n: int | None = None, captions: bool = True,
            model: str = "small") -> list[Path]:
     info = json.loads((run_dir / "info.json").read_text())
-    audio = run_dir / "audio.m4a"
     picks = auto_picks(run_dir, auto_n or 8) if picks_path is None else json.loads(Path(picks_path).read_text())
-    out_dir = run_dir / "clips"
-    out_dir.mkdir(exist_ok=True)
     rows, made = [], []
-    cam_file = run_dir / "facecam.json"
-    known_cam = json.loads(cam_file.read_text()) if cam_file.exists() else None
     for i, clip in enumerate(picks["clips"], 1):
-        start, end = parse_time(clip["start"]), parse_time(clip["end"])
-        if end - start > 59:
-            log(f"  clip {i} is {end - start:.0f}s, trimming to 59s (keep Shorts under a minute for best reach)")
-            end = start + 59
-        name = f"{i:02d}_{slug(clip['title'], 40)}"
-        log(f"clip {i}/{len(picks['clips'])}: {C.fmt_ts(start)}–{C.fmt_ts(end)} {clip['title']}")
-        sec_start = max(0.0, start - 8)
-        section = D.download_video_section(info["source"], sec_start, end + 8, out_dir / "src" / f"{name}.mp4")
-        real = find_offset(section, audio, sec_start, info.get("audio_offset", 0.0))
-        local_s, local_e = start - real, end - real
-        words = words_for(run_dir, audio, start, end, info.get("audio_offset", 0.0), model) if captions else []
-        mp4 = out_dir / f"{name}.mp4"
-        lay = render_clip(section, local_s, local_e, words, start, clip.get("hook", ""), mp4,
-                          clip.get("layout"), clip.get("cam"), captions, known_cam)
-        if lay["layout"] == "split" and not known_cam:
-            known_cam = lay["cam"]
-            cam_file.write_text(json.dumps(known_cam))
-        desc = description(info, clip)
-        (out_dir / f"{name}.txt").write_text(f"TITLE:\n{clip['title'][:100]}\n\nDESCRIPTION:\n{desc}\n")
+        mp4, lay, desc = render_one(run_dir, info, clip, f"{i:02d}_{slug(clip['title'], 40)}", model, captions)
         rows.append({"file": mp4.name, "title": clip["title"][:100], "description": desc,
-                     "start": C.fmt_ts(start), "length_s": round(end - start), "layout": lay["layout"]})
+                     "start": C.fmt_ts(parse_time(clip["start"])), "layout": lay["layout"]})
         made.append(mp4)
-        log(f"  ✓ {mp4.name} ({lay['layout']} layout)")
+    out_dir = run_dir / "clips"
     with open(out_dir / "upload_sheet.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) if rows else ["file"])
         w.writeheader()

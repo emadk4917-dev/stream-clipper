@@ -1,5 +1,23 @@
 # The Playbook: Stream Clips → Money
 
+## 0. Two lanes, kept on SEPARATE accounts
+
+| | **Lane A: Campaign clipping** | **Lane B: Your own GTA 6 page** (tips, tricks, secrets, news) |
+|---|---|---|
+| Footage | Streamers' streams (only campaign streamers) | **Your own gameplay**, recorded by your brother |
+| Who pays | The streamer/brand via Content Rewards / Whop, per 1k views | **The platforms**: YouTube Shorts revenue, TikTok Creator Rewards, IG/FB bonuses, plus affiliate links and brand deals |
+| Rate | ~$0.75–1.50 per 1k views (often capped, nothing under ~5k views) | YouTube Shorts ~$0.05–0.40 per 1k (higher for UK/US viewers); TikTok Creator Rewards ~$0.40–1 per 1k on videos **over 1 minute** |
+| Unlock | Nothing: post and get paid | YouTube: 1,000 subs + 10M Shorts views in 90 days (then apply, about a month). TikTok: 18+, 10k followers, 100k views in 30 days |
+| Speed of money | **Days–weeks** | **Weeks–months**, but it **compounds** and keeps paying after GTA hype and campaign budgets fade |
+| Tools | Live clipper → approval queue → publisher | Trend radar briefs → film → same editor/captions |
+| Accounts | Campaign account sets (e.g. "GTA Clips Daily") | One brand: e.g. "Leonida Tips" on YouTube + TikTok + IG |
+
+**Why separate:** a channel full of streamer clips gets rejected from YouTube's Partner Program for
+"reused content". Keep your own-footage page clean so it qualifies for platform pay.
+
+**How the two feed each other:** Lane A pays the bills now and teaches us which hooks and topics win.
+Lane B turns that knowledge into a page you own, and that page is what reaches a steady £10k a month.
+
 ## 1. Where the money actually comes from (in order of speed)
 
 | # | Source | How you get paid | When money can arrive | Rate |

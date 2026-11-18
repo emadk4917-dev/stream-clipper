@@ -6,6 +6,15 @@ Turns streamer VODs into finished vertical Shorts (1080×1920, facecam/gameplay 
 - **Who we may clip:** [streamers.md](streamers.md) · **Results log:** [tracker.csv](tracker.csv)
 - **Claude skill:** `.claude/skills/clip-stream/SKILL.md`. In Claude Code, just say *"clip xqc's latest stream"* or paste a VOD link.
 
+## 24/7 system (server)
+| Service | What it does |
+|---|---|
+| `clipper.live` | Watches every active campaign streamer, clips moments while they're live, Claude scores them, sends 5+/10 clips to Telegram |
+| `clipper.bot` | Telegram: ✅/❌ approvals, posting slots per account set, sends posting packs when due, `/addcampaign`, daily scout report |
+| `clipper.trends` | Hourly GTA 6 trend radar (YouTube + Reddit fast movers) → filming briefs for the own-content page |
+
+Setup: **[SERVER_SETUP.md](SERVER_SETUP.md)** · settings: `.env.example`
+
 ## Manual use
 ```bash
 bash setup.sh
