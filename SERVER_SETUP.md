@@ -35,20 +35,11 @@ git clone https://github.com/emadk4917-dev/stream-clipper.git /opt/stream-clippe
 ```bash
 bash /opt/stream-clipper/deploy/setup_server.sh
 ```
-```bash
-nano /opt/stream-clipper/.env
-```
-In nano, fill in `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN` and `YOUTUBE_API_KEY`, then press Ctrl+O, Enter, Ctrl+X to save and exit.
+The installer then **asks for each key one by one**. Paste it when asked; nothing appears while you
+type, which is normal. Then it tells you to send `/start` in your Telegram group, and you type the
+chat id the bot replies with. Everything starts automatically. No files to edit.
 
-## Step 5: Connect Telegram, then start everything
-```bash
-systemctl enable --now clipper-bot
-```
-In your Telegram group, send `/start`. The bot replies **"Your chat id is -100…"**. Put that number in
-`.env` as `TELEGRAM_CHAT_IDS=-100…`, then:
-```bash
-systemctl restart clipper-bot && systemctl enable --now clipper-realtime clipper-live clipper-trends
-```
+(To change a key later: `bash /opt/stream-clipper/deploy/configure.sh`)
 
 ## Step 6: Add your campaigns (in Telegram)
 ```

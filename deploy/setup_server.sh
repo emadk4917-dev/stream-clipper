@@ -14,6 +14,5 @@ for svc in realtime live bot trends; do
 done
 systemctl daemon-reload
 echo
-echo "✅ Installed. Next: nano ${APP_DIR}/.env  (fill in the keys), then:"
-echo "   systemctl enable --now clipper-bot clipper-realtime clipper-live clipper-trends"
-echo "   journalctl -u clipper-live -f      # watch the live clipper"
+echo "✅ Installed. Now let's add your keys:"
+bash "${APP_DIR}/deploy/configure.sh"
